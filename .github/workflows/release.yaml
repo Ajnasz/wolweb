@@ -9,8 +9,9 @@ jobs:
   build:
     name: Build
     permissions:
-      contents: read
-      packages: write
+      contents: write
+      pull-requests: write
+      repository-projects: write
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     steps:
