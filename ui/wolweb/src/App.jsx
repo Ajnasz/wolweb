@@ -108,6 +108,7 @@ function useSendWol() {
     setLoading(macAddr);
     setError(null);
 
+    let json;
     try {
       const response = await fetch(getURL('/api/wol'), {
         method: 'POST',
@@ -116,9 +117,17 @@ function useSendWol() {
           'Content-Type': 'application/json',
         },
       })
-      await response.json();
-      await new Promise((r) => setTimeout(r, 500));
-      return macAddr;
+      json = await response.json();
+      if (response.ok) {
+        await new Promise((r) => setTimeout(r, 500));
+        return macAddr;
+      }
+
+      if (json?.error) {
+        throw new Error(json.error);
+      }
+
+      throw new Error('Failed to send WOL');
     } catch (error) {
       setError(error);
     } finally {
@@ -148,11 +157,13 @@ function App() {
   }
 
   if (macError) {
-    return <div>Error: {macError.message}</div>;
+    return <div className="p-4 bg-gray-300 text-red-800 rounded">Error: {macError.message}</div>;
   }
 
   if (wolError) {
-    return <div>Error: {wolError.message}</div>;
+    return <div className="p-4 bg-gray-300 text-red-800 rounded">
+      Error: {wolError.message}
+    </div>;
   }
 
   return (
