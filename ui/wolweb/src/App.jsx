@@ -6,7 +6,7 @@ function getURL(path) {
     return new URL(path, 'http://localhost:8951');
   }
 
-  return new URL(path, window.location.origin);
+  return new URL(path, window.location.origin + window.location.pathname);
 }
 
 function useMacs() {
@@ -19,7 +19,7 @@ function useMacs() {
 
     const fetchData = async () => {
       try {
-        const response = await fetch(getURL('/api/macs'), { signal });
+        const response = await fetch(getURL('./api/macs'), { signal });
         if (response.ok) {
           const { macs } = await response.json();
           setMacs(macs || []);
@@ -110,7 +110,7 @@ function useSendWol() {
 
     let json;
     try {
-      const response = await fetch(getURL('/api/wol'), {
+      const response = await fetch(getURL('./api/wol'), {
         method: 'POST',
         body: JSON.stringify(body),
         headers: {
