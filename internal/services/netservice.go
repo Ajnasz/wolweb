@@ -1,16 +1,11 @@
 package services
 
 import (
-	"fmt"
 	"net"
 
 	"github.com/Ajnasz/wol"
 	"golang.org/x/sync/errgroup"
 )
-
-func main() {
-	fmt.Println("vim-go")
-}
 
 type NetService struct{}
 
@@ -47,7 +42,7 @@ func (NetService) GetAvailableBroadcastAddresses() ([]string, error) {
 }
 
 func (n NetService) WoL(macAddr string, broadcastAddress string) error {
-	if broadcastAddress == "" {
+	if broadcastAddress != "" {
 		return wol.SendPacket(macAddr, broadcastAddress)
 	}
 

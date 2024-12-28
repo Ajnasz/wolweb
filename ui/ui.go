@@ -8,9 +8,9 @@ import (
 // Content holds our static web server content.
 //
 //go:embed wolweb/dist/*
-var content embed.FS
+var Content embed.FS
 
 // Get returns the ui file system
 func Get() (fs.FS, error) {
-	return fs.Sub(content, "wolweb/dist")
+	return fs.Sub(Content, "wolweb/dist")
 }

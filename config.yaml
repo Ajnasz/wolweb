@@ -1,0 +1,9 @@
+MacAddresses:
+  - name: "Display Name of Device 1"
+    address: "00:11:22:00:00"
+  - name: "Display Name of Device 2"
+    address: "00:11:22:00:00:01"
+  - name: "Display Name of Device 3"
+    address: "00:11:22:00:00:02"
+  - name: "Display Name of Device 4"
+    address: "00:11:22:00:00:03"
