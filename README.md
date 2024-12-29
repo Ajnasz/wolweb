@@ -78,15 +78,24 @@ git clone https://github.com/Ajnasz/wolweb.git
 docker build -t wolweb .
 ```
 
+## Running the Docker Container
+
+1. Create a configuration file named `config.yaml` with the MAC addresses of the devices you want to wake up. You can use the example configuration provided above.
+
+2. Pull the Docker image from the GitHub Container Registry or use the image you built in the previous step:
+
+```bash
+docker pull ghcr.io/ajnasz/wolweb:v1.1.2
+```
+
 3. Run the Docker container:
 
 ```bash
-docker run -d --network host -v $PWD/config.yaml:/config.yaml wolweb
+docker run -d --network host -v $PWD/config.yaml:/app/config.yaml ghcr.io/ajnasz/wolweb:v1.1.2
 ```
 
-You must mount the configuration file as `/config.yaml` in the container. You can replace `$PWD/config.yaml` with the actual path to your configuration file.
+You must mount the configuration file as `/app/config.yaml` in the container. You can replace `$PWD/config.yaml` with the actual path to your configuration file.
 You will need to set the network mode to `host` to allow the container to access network devices.
-You can also change the port mapping to use a different port on your host machine.
 
 ## Running as a Systemd Service
 
