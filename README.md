@@ -62,6 +62,32 @@ go build -o wolweb
 ./wolweb
 ```
 
+## Building the Docker Image
+
+To build the WolWeb application as a Docker image, follow these steps:
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/Ajnasz/wolweb.git
+```
+
+2. Build the Docker image:
+
+```bash
+docker build -t wolweb .
+```
+
+3. Run the Docker container:
+
+```bash
+docker run -d --network host -v $PWD/config.yaml:/config.yaml wolweb
+```
+
+You must mount the configuration file as `/config.yaml` in the container. You can replace `$PWD/config.yaml` with the actual path to your configuration file.
+You will need to set the network mode to `host` to allow the container to access network devices.
+You can also change the port mapping to use a different port on your host machine.
+
 ## Running as a Systemd Service
 
 To run the WolWeb application as a systemd service, create a file named `wolweb.service` in `/etc/systemd/system/` with the following content:
