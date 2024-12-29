@@ -1,6 +1,6 @@
 .PHONY: all build-ui install-ui
 
-all: install-ui build-ui build/wolweb
+all: clean install-ui build-ui build/wolweb
 
 install-ui:
 	cd ui/wolweb && npm install
@@ -10,4 +10,10 @@ build-ui:
 
 build/wolweb:
 	go build -o build/wolweb
+
+
+clean:
+	rm -rf build
+	rm -rf ui/wolweb/node_modules
+	rm -rf ui/wolweb/dist
 
