@@ -1,5 +1,50 @@
-import { useState, useEffect } from 'react';
 import classNames from 'classnames';
+import React, { useEffect, useState } from 'react';
+const STATUS = {
+  LOADING: 'loading',
+  SUCCESS: 'success',
+  ERROR: 'error',
+  IDLE: 'idle',
+};
+
+const AnimatedStatusIcon = ({ status = STATUS.LOADING }) => {
+  const [show, setShow] = useState(true);
+  const [currentStatus, setCurrentStatus] = useState(status);
+
+  useEffect(() => {
+    if (status !== currentStatus) {
+      setShow(false);
+      const timer = setTimeout(() => {
+        setCurrentStatus(status);
+        setShow(true);
+      }, 200); // Match this with CSS transition duration
+      return () => clearTimeout(timer);
+    }
+  }, [status, currentStatus]);
+
+  const getIcon = () => {
+    switch (currentStatus) {
+      case STATUS.LOADING:
+        return <LoadingIcon />;
+      case STATUS.SUCCESS:
+        return <SuccessIcon />;
+      case STATUS.ERROR:
+        return <ErrorIcon />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div
+      className={`absolute transition-all duration-200 transform -top-3 -right-3
+${show ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}
+    >
+      {getIcon()}
+    </div>
+  );
+};
+
 
 function getURL(path) {
   if (window.location.hostname.includes('localhost')) {
@@ -45,34 +90,30 @@ function useMacs() {
   return { macs, loading, error };
 }
 
-function SuccessIcon() {
-  const [animate, setAnimate] = useState(false);
-  requestAnimationFrame(() => {
-    setAnimate(true);
-  })
+function Icon({ children, className }) {
   return (
-    <div className={classNames({
-      'scale-100': animate,
-      'scale-50': !animate,
-    },
-      `
-      absolute -top-3 -right-3 flex justify-center items-center w-8 h-8 rounded-full bg-green-600 text-white text-2xl
-      transition transition-transform ease-in-out duration-300
-      `)}>
-      ✓
-    </div>
+    <div className={classNames("flex justify-center items-center w-8 h-8 rounded-full text-white text-xl", className)}>{children}</div>
   );
+}
+
+function SuccessIcon() {
+  return <Icon className="bg-green-600">✓</Icon>;
 }
 
 function LoadingIcon() {
-  return (
-    <div className={classNames(`absolute -top-3 -right-3 grid grid-cols-1 place-items-center w-8 h-8 rounded-full bg-blue-600 text-white text-2xl duration-300 animate-bounce`
-    )}><div>·</div></div>
-  );
+  return <Icon className="bg-blue-600">⌛</Icon>;
 }
 
-function MacButton({ mac, onMacSelect, isLoading, isSuccess }) {
+function ErrorIcon() {
+  return <Icon className="bg-red-600">!</Icon>;
+}
+
+function MacButton({ mac, onMacSelect, isLoading, isSuccess, isError }) {
   const { Address, Name } = mac;
+  const status = isError ? STATUS.ERROR :
+    isLoading ? STATUS.LOADING :
+      isSuccess ? STATUS.SUCCESS :
+        STATUS.IDLE;
   return <button type="button" className={classNames(
     `
     relative
@@ -89,24 +130,29 @@ function MacButton({ mac, onMacSelect, isLoading, isSuccess }) {
     focus:border-gray-300 dark:focus:border-gray-600
     focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600
     `)} onClick={() => onMacSelect(Address)}>
-    {isLoading && <LoadingIcon />}
-    {isSuccess && <SuccessIcon />}
+    {(isLoading || isSuccess) && <AnimatedStatusIcon status={status} />}
     <h2 className="text-lg">{Name}</h2>
-    <span className="text-gray-500 dark:text-gray-400 text-sm">{Address}</span>
+    <div className="text-gray-500 dark:text-gray-400 text-sm">{Address}</div>
+    <footer className="mt-2 text-sm">
+      {isSuccess && <div className="text-green-600 dark:text-green-400">Sent WOL to {Address}</div>}
+      {isError && <div className="text-red-600 dark:text-red-400">Error: {isError.message}</div>}
+    </footer>
   </button>;
 }
 
 function useSendWol() {
   const [loading, setLoading] = useState(null);
   const [error, setError] = useState(null);
+  const [macAddr, setMac] = useState(null);
 
   async function sendWol(macAddr) {
     const body = {
       mac_addr: macAddr,
     };
 
-    setLoading(macAddr);
+    setLoading(true);
     setError(null);
+    setMac(macAddr);
 
     let json;
     try {
@@ -119,7 +165,7 @@ function useSendWol() {
       })
       json = await response.json();
       if (response.ok) {
-        await new Promise((r) => setTimeout(r, 500));
+        await new Promise((r) => requestAnimationFrame(r));
         return macAddr;
       }
 
@@ -131,24 +177,22 @@ function useSendWol() {
     } catch (error) {
       setError(error);
     } finally {
-      setLoading(null)
+      setLoading(null);
     }
   }
 
-  return { sendWol, loading, error };
+  return { sendWol, loading, error, macAddr };
 }
 
 function App() {
   const { macs, loading, error: macError } = useMacs();
-  const { sendWol, loading: wolLoading, error: wolError } = useSendWol();
+  const { sendWol, loading: wolLoading, error: wolError, macAddr } = useSendWol();
   const [isSuccess, setIsSuccess] = useState(false);
 
   function onMacSelect(address) {
+    setIsSuccess(false);
     sendWol(address).then(() => {
       setIsSuccess(address);
-      setTimeout(() => {
-        setIsSuccess(false)
-      }, 2000);
     });
   }
 
@@ -157,18 +201,20 @@ function App() {
   }
 
   if (macError) {
-    return <div className="p-4 bg-gray-300 text-red-800 rounded">Error: {macError.message}</div>;
-  }
-
-  if (wolError) {
-    return <div className="p-4 bg-gray-300 text-red-800 rounded">
-      Error: {wolError.message}
-    </div>;
+    return <div className="p-4 bg-gray-300 text-red-600 rounded">Error: {macError.message}</div>;
   }
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-      {macs.map((mac) => <MacButton key={mac.Address} mac={mac} onMacSelect={onMacSelect} isLoading={wolLoading === mac.Address} isSuccess={isSuccess === mac.Address} />)}
+      {macs.map((mac) => <MacButton
+        key={mac.Address}
+        mac={mac}
+        wolError={macAddr === mac.Address && wolError}
+        onMacSelect={onMacSelect}
+        isLoading={macAddr === mac.Address && wolLoading}
+        isSuccess={macAddr === mac.Address && isSuccess}
+        isError={macAddr === mac.Address && wolError}
+      />)}
     </div>
   )
 }
