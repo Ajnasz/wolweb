@@ -1,5 +1,6 @@
-import classNames from 'classnames';
 import React, { useEffect, useState } from 'react';
+import classNames from 'classnames';
+
 const STATUS = {
   LOADING: 'loading',
   SUCCESS: 'success',
@@ -7,7 +8,20 @@ const STATUS = {
   IDLE: 'idle',
 };
 
-const AnimatedStatusIcon = ({ status = STATUS.LOADING }) => {
+function StatusIcon({ status }) {
+  switch (status) {
+    case STATUS.LOADING:
+      return <LoadingIcon />;
+    case STATUS.SUCCESS:
+      return <SuccessIcon />;
+    case STATUS.ERROR:
+      return <ErrorIcon />;
+    default:
+      return null;
+  }
+}
+
+const AnimatedStatusIcon = ({ status }) => {
   const [show, setShow] = useState(true);
   const [currentStatus, setCurrentStatus] = useState(status);
 
@@ -17,36 +31,23 @@ const AnimatedStatusIcon = ({ status = STATUS.LOADING }) => {
       const timer = setTimeout(() => {
         setCurrentStatus(status);
         setShow(true);
-      }, 200); // Match this with CSS transition duration
+      }, 200);
       return () => clearTimeout(timer);
     }
   }, [status, currentStatus]);
 
-  const getIcon = () => {
-    switch (currentStatus) {
-      case STATUS.LOADING:
-        return <LoadingIcon />;
-      case STATUS.SUCCESS:
-        return <SuccessIcon />;
-      case STATUS.ERROR:
-        return <ErrorIcon />;
-      default:
-        return null;
-    }
-  };
-
   return (
     <div
-      className={`absolute transition-all duration-200 transform -top-3 -right-3
-${show ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`}
-    >
-      {getIcon()}
-    </div>
+      className={classNames("absolute -top-3 -right-3 transition-all duration-200 transform", {
+        'opacity-0 scale-50': !show,
+        'opacity-100 scale-100': show,
+      })}
+    ><StatusIcon status={currentStatus} /></div>
   );
 };
 
 
-function getURL(path) {
+function getApiUrl(path) {
   if (window.location.hostname.includes('localhost')) {
     return new URL(path, 'http://localhost:8951');
   }
@@ -54,7 +55,7 @@ function getURL(path) {
   return new URL(path, window.location.origin + window.location.pathname);
 }
 
-function useMacs() {
+function useFetchMacAddresses() {
   const [macs, setMacs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -64,12 +65,12 @@ function useMacs() {
 
     const fetchData = async () => {
       try {
-        const response = await fetch(getURL('./api/macs'), { signal });
+        const response = await fetch(getApiUrl('./api/macs'), { signal });
         if (response.ok) {
           const { macs } = await response.json();
           setMacs(macs || []);
         } else {
-          throw new Error();
+          throw new Error(response.statusText);
         }
       } catch (error) {
         if (error.name !== 'AbortError') {
@@ -90,52 +91,46 @@ function useMacs() {
   return { macs, loading, error };
 }
 
-function Icon({ children, className }) {
+function StatusIconWrapper({ children, className }) {
   return (
     <div className={classNames("flex justify-center items-center w-8 h-8 rounded-full text-white text-xl", className)}>{children}</div>
   );
 }
 
 function SuccessIcon() {
-  return <Icon className="bg-green-600">✓</Icon>;
+  return <StatusIconWrapper className="bg-green-600">✓</StatusIconWrapper>;
 }
 
 function LoadingIcon() {
-  return <Icon className="bg-blue-600">⌛</Icon>;
+  return <StatusIconWrapper className="bg-blue-600">⌛</StatusIconWrapper>;
 }
 
 function ErrorIcon() {
-  return <Icon className="bg-red-600">!</Icon>;
+  return <StatusIconWrapper className="bg-red-600">!</StatusIconWrapper>;
 }
 
-function MacButton({ mac, onMacSelect, isLoading, isSuccess, isError }) {
+function MacAddressButton({ mac, onMacSelect, status, wolError }) {
   const { Address, Name } = mac;
-  const status = isError ? STATUS.ERROR :
-    isLoading ? STATUS.LOADING :
-      isSuccess ? STATUS.SUCCESS :
-        STATUS.IDLE;
   return <button type="button" className={classNames(
     `
     relative
     text-center cursor-pointer
-    p-4
-    rounded-lg
-    border
+    p-4 rounded-lg border
     bg-gray-50 dark:bg-gray-700
     border-gray-300 dark:border-gray-600
     text-gray-700 dark:text-gray-200
     hover:bg-gray-200 dark:hover:bg-gray-800
-    focus:bg-gray-300 dark:focus:bg-gray-600
     focus:outline-none
-    focus:border-gray-300 dark:focus:border-gray-600
-    focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600
+    focus:bg-gray-200 dark:focus:bg-gray-600
+    focus:border-gray-200 dark:focus:border-gray-600
+    focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-600
     `)} onClick={() => onMacSelect(Address)}>
-    {(isLoading || isSuccess) && <AnimatedStatusIcon status={status} />}
+    {(status === STATUS.LOADING || status === STATUS.SUCCESS || status === STATUS.ERROR) && <AnimatedStatusIcon status={status} />}
     <h2 className="text-lg">{Name}</h2>
     <div className="text-gray-500 dark:text-gray-400 text-sm">{Address}</div>
     <footer className="mt-2 text-sm">
-      {isSuccess && <div className="text-green-600 dark:text-green-400">Sent WOL to {Address}</div>}
-      {isError && <div className="text-red-600 dark:text-red-400">Error: {isError.message}</div>}
+      {status === STATUS.SUCCESS && <div className="text-green-600 dark:text-green-400">Sent WOL to {Address}</div>}
+      {status === STATUS.ERROR && <div className="text-red-600 dark:text-red-400">Error: {wolError.message}</div>}
     </footer>
   </button>;
 }
@@ -156,7 +151,7 @@ function useSendWol() {
 
     let json;
     try {
-      const response = await fetch(getURL('./api/wol'), {
+      const response = await fetch(getApiUrl('./api/wol'), {
         method: 'POST',
         body: JSON.stringify(body),
         headers: {
@@ -184,12 +179,19 @@ function useSendWol() {
   return { sendWol, loading, error, macAddr };
 }
 
+function determineStatus(isError, isLoading, isSuccess) {
+  return isError ? STATUS.ERROR :
+    isLoading ? STATUS.LOADING :
+      isSuccess ? STATUS.SUCCESS :
+        STATUS.IDLE;
+}
+
 function App() {
-  const { macs, loading, error: macError } = useMacs();
+  const { macs, loading, error: macError } = useFetchMacAddresses();
   const { sendWol, loading: wolLoading, error: wolError, macAddr } = useSendWol();
   const [isSuccess, setIsSuccess] = useState(false);
 
-  function onMacSelect(address) {
+  function handleMacSelect(address) {
     setIsSuccess(false);
     sendWol(address).then(() => {
       setIsSuccess(address);
@@ -206,17 +208,15 @@ function App() {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-      {macs.map((mac) => <MacButton
+      {macs.map((mac) => <MacAddressButton
         key={mac.Address}
         mac={mac}
+        status={macAddr === mac.Address && determineStatus(wolError, wolLoading, isSuccess)}
         wolError={macAddr === mac.Address && wolError}
-        onMacSelect={onMacSelect}
-        isLoading={macAddr === mac.Address && wolLoading}
-        isSuccess={macAddr === mac.Address && isSuccess}
-        isError={macAddr === mac.Address && wolError}
+        onMacSelect={handleMacSelect}
       />)}
     </div>
-  )
+  );
 }
 
 export default App
