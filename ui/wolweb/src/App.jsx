@@ -115,15 +115,17 @@ function MacAddressButton({ mac, onMacSelect, status, wolError }) {
     `
     relative
     text-center cursor-pointer
-    p-4 rounded-lg border
-    bg-gray-50 dark:bg-gray-700
-    border-gray-300 dark:border-gray-600
-    text-gray-700 dark:text-gray-200
-    hover:bg-gray-200 dark:hover:bg-gray-800
+
+    p-5
+    rounded-lg
+    border dark:border-none
+    shadow-sm hover:shadow dark:shadow-none dark:hover:shadow-none
+    bg-white dark:bg-slate-900/70
+    text-blue-600 hover:text-pink-700 dark:text-blue-300
+    transition transition-colors transition-shadow
+
     focus:outline-none
-    focus:bg-gray-200 dark:focus:bg-gray-600
-    focus:border-gray-200 dark:focus:border-gray-600
-    focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-600
+    focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-300
     `)} onClick={() => onMacSelect(Address)}>
     {(status === STATUS.LOADING || status === STATUS.SUCCESS || status === STATUS.ERROR) && <AnimatedStatusIcon status={status} />}
     <h2 className="text-lg">{Name}</h2>
