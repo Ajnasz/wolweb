@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/Ajnasz/wolweb/internal/api"
 	"github.com/Ajnasz/wolweb/internal/config"
@@ -25,9 +26,15 @@ func main() {
 	}
 
 	slog.Info("Starting server", "address", *address)
-	if err := http.ListenAndServe(*address, webApi); err != nil {
-		if err != http.ErrServerClosed {
-			slog.Error("Failed to start server", "error", err)
-		}
+	server := &http.Server{
+		Addr:         *address,
+		Handler:      webApi,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  15 * time.Second,
+	}
+
+	if err := server.ListenAndServe(); err != nil {
+		slog.Error("Failed to start server", "error", err)
 	}
 }
