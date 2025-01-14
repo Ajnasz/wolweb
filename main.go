@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"net/http"
 
 	"github.com/Ajnasz/wolweb/internal/api"
 	"github.com/Ajnasz/wolweb/internal/config"
@@ -23,5 +24,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	webApi.Run(*address)
+	log.Printf("Starting server on %s\n", *address)
+	if err := http.ListenAndServe(*address, webApi); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }

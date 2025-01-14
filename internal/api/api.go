@@ -1,15 +1,14 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
-	"fmt"
+	"net/http"
 
 	"github.com/Ajnasz/wol"
 	"github.com/Ajnasz/wolweb/internal/config"
 	"github.com/Ajnasz/wolweb/internal/services"
 	"github.com/Ajnasz/wolweb/ui"
-	"github.com/gin-contrib/static"
-	"github.com/gin-gonic/gin"
 )
 
 type WoLRequestDAL struct {
@@ -21,39 +20,46 @@ type API struct{}
 
 func wakeOnLan(req WoLRequestDAL) error {
 	netService := services.NetService{}
-
 	return netService.WoL(req.MacAddr, req.BroadcastAddr)
 }
 
-func New(conf *config.Config) (*gin.Engine, error) {
-	route := gin.Default()
-	route.Use(static.Serve("/", static.EmbedFolder(ui.Content, "wolweb/dist")))
-	apiGroup := route.Group("/api")
-	{
-
-		apiGroup.POST("/wol", func(c *gin.Context) {
-			var req WoLRequestDAL
-			if err := c.BindJSON(&req); err != nil {
-				c.JSON(400, gin.H{"error": err.Error()})
-				return
-			}
-
-			if err := wakeOnLan(req); err != nil {
-				fmt.Println(err)
-				if errors.Is(err, wol.ErrInvalidMACAddress) {
-					c.JSON(400, gin.H{"error": err.Error()})
-					return
-				}
-				c.JSON(500, gin.H{"error": err.Error()})
-				return
-			}
-
-			c.JSON(200, gin.H{"message": "success"})
-		})
-		apiGroup.GET("/macs", func(c *gin.Context) {
-			c.JSON(200, gin.H{"macs": conf.MacAddresses})
-		})
+func handleWoL(w http.ResponseWriter, r *http.Request) {
+	var req WoLRequestDAL
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
-	return route, nil
+	if err := wakeOnLan(req); err != nil {
+		if errors.Is(err, wol.ErrInvalidMACAddress) {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "success"})
+}
+
+func handleMacs(conf *config.Config) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]interface{}{"macs": conf.MacAddresses})
+	}
+}
+
+func New(conf *config.Config) (*http.ServeMux, error) {
+	mux := http.NewServeMux()
+	static, err := ui.Get()
+	if err != nil {
+		return nil, err
+	}
+	mux.Handle("/", http.FileServer(http.FS(static)))
+	mux.HandleFunc("POST /api/wol", handleWoL)
+	mux.HandleFunc("GET /api/macs", handleMacs(conf))
+
+	return mux, nil
 }
