@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/Ajnasz/wolweb/internal/api"
@@ -16,16 +16,18 @@ func main() {
 
 	conf, err := config.New(*configPath)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("Failed to load configuration", "error", err)
 	}
 
 	webApi, err := api.New(conf)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("Failed to create web api", "error", err)
 	}
 
-	log.Printf("Starting server on %s\n", *address)
+	slog.Info("Starting server", "address", *address)
 	if err := http.ListenAndServe(*address, webApi); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+		if err != http.ErrServerClosed {
+			slog.Error("Failed to start server", "error", err)
+		}
 	}
 }

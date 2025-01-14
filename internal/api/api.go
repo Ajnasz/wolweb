@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/Ajnasz/wol"
@@ -31,6 +32,7 @@ func handleWoL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := wakeOnLan(req); err != nil {
+		slog.Error("Failed to send WoL", "error", err, "mac", req.MacAddr)
 		if errors.Is(err, wol.ErrInvalidMACAddress) {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
