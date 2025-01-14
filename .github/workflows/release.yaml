@@ -38,7 +38,7 @@ jobs:
 
     - name: Build
       run: |
-        make all
+        make clean all
 
     - run: |
         set -x
