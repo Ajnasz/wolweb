@@ -1,9 +1,9 @@
 MacAddresses:
-  - name: "Display Name of Device 1"
+  - name: "NAS"
     address: "00:11:22:00:00:00"
-  - name: "Display Name of Device 2"
+  - name: "Home Server"
     address: "00:11:22:00:00:01"
-  - name: "Display Name of Device 3"
+  - name: "File Server"
     address: "00:11:22:00:00:02"
-  - name: "Display Name of Device 4"
+  - name: "Media Center PC"
     address: "00:11:22:00:00:03"
