@@ -15,6 +15,7 @@ var ErrFailedToParseConfig = errors.New("failed to parse config")
 type MacAddress struct {
 	Address string
 	Name    string
+	Host    string
 }
 
 type Config struct {
@@ -43,4 +44,24 @@ func New(configFile string) (*Config, error) {
 	}
 
 	return &c, nil
+}
+
+func (c Config) FindByName(name string) *MacAddress {
+	for _, mac := range c.MacAddresses {
+		if mac.Name == name {
+			return &mac
+		}
+	}
+
+	return nil
+}
+
+func (c Config) FindByMac(address string) *MacAddress {
+	for _, mac := range c.MacAddresses {
+		if mac.Address == address {
+			return &mac
+		}
+	}
+
+	return nil
 }

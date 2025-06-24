@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import classNames from 'classnames';
 
 const STATUS = {
@@ -11,11 +11,11 @@ const STATUS = {
 function StatusIcon({ status }) {
   switch (status) {
     case STATUS.LOADING:
-      return <LoadingIcon />;
+      return <LoadingIcon className="text-xl w-8 h-8" />;
     case STATUS.SUCCESS:
-      return <SuccessIcon />;
+      return <SuccessIcon className="text-xl w-8 h-8" />;
     case STATUS.ERROR:
-      return <ErrorIcon />;
+      return <ErrorIcon className="text-xl w-8 h-8" />;
     default:
       return null;
   }
@@ -53,6 +53,55 @@ function getApiUrl(path) {
   }
 
   return new URL(path, window.location.origin + window.location.pathname);
+}
+
+function useSendPing(mac) {
+  const [ok, setOk] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const timeoutRef = useRef(null);
+  const startTimeRef = useRef(null);
+
+  const sendPing = useCallback(async () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setLoading(true);
+    startTimeRef.current = Date.now();
+
+    try {
+      const response = await fetch(getApiUrl(`./api/ping/${mac}`));
+      if (response.ok) {
+        const { status } = await response.json();
+        if (status === 'ok') {
+          setOk(true);
+          setError(null);
+        } else {
+          setOk(false);
+        }
+      } else {
+        const { error } = await response.json();
+        throw new Error(error);
+      }
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+      if (Date.now() - startTimeRef.current < 5000) {
+        timeoutRef.current = setTimeout(() => sendPing(), 3000);
+      }
+    }
+  }, [mac]);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  return { ok, error, sendPing, loading };
 }
 
 function useFetchMacAddresses() {
@@ -93,48 +142,86 @@ function useFetchMacAddresses() {
 
 function StatusIconWrapper({ children, className }) {
   return (
-    <div className={classNames("flex justify-center items-center w-8 h-8 rounded-full text-white text-xl", className)}>{children}</div>
+    <div className={classNames("inline-flex justify-center items-center rounded-full text-white", className)}>{children}</div>
   );
 }
 
-function SuccessIcon() {
-  return <StatusIconWrapper className="bg-green-600">✓</StatusIconWrapper>;
+function SuccessIcon({ className }) {
+  return <StatusIconWrapper className={classNames("bg-green-600", className)}>✓</StatusIconWrapper>;
 }
 
-function LoadingIcon() {
-  return <StatusIconWrapper className="bg-blue-600">⌛</StatusIconWrapper>;
+function LoadingIcon({ className }) {
+  return <StatusIconWrapper className={classNames("bg-blue-600", className)}>⌛</StatusIconWrapper>;
 }
 
-function ErrorIcon() {
-  return <StatusIconWrapper className="bg-red-600">!</StatusIconWrapper>;
+function ErrorIcon({ className }) {
+  return <StatusIconWrapper className={classNames("bg-red-600", className)}>!</StatusIconWrapper>;
 }
 
 function MacAddressButton({ mac, onMacSelect, status, wolError }) {
-  const { Address, Name } = mac;
-  return <button type="button" className={classNames(
+  const { Address, Name, Host } = mac;
+  const { ok: pingOk, error: pingError, sendPing, loading: pingLoading } = useSendPing(Address);
+
+  return <div className={classNames(
     `
     relative
-    text-center cursor-pointer
+    text-center
 
     p-5
     rounded-lg
     border dark:border-none
     shadow-sm hover:shadow dark:shadow-none dark:hover:shadow-none
     bg-white dark:bg-slate-900/70
-    text-blue-600 hover:text-pink-700 dark:text-blue-300
     transition transition-colors transition-shadow
-
     focus:outline-none
     focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-300
-    `)} onClick={() => onMacSelect(Address)}>
+    `)}>
     {(status === STATUS.LOADING || status === STATUS.SUCCESS || status === STATUS.ERROR) && <AnimatedStatusIcon status={status} />}
-    <h2 className="text-lg">{Name}</h2>
-    <div className="text-gray-500 dark:text-gray-400 text-sm">{Address}</div>
-    <footer className="mt-2 text-sm">
-      {status === STATUS.SUCCESS && <div className="text-green-600 dark:text-green-400">Sent WOL to {Address}</div>}
-      {status === STATUS.ERROR && <div className="text-red-600 dark:text-red-400">Error: {wolError.message}</div>}
+    <h2 className="text-lg">
+      <button type="button"
+        onClick={() => onMacSelect(Address)}
+        className="
+        transition transition-colors duration-150
+        text-blue-600 dark:text-blue-300
+        hover:text-pink-700">
+        {Name}
+      </button>
+    </h2>
+    <div className="text-gray-500 dark:text-gray-400 text-sm cursor-pointer" onClick={() => onMacSelect(Address)}
+    >{Address}<br />{Host}</div>
+    <footer className="mt-2">
+      <div className="flex justify-between mb-2">
+        <button type="button" className="
+          px-4 py-2
+          border rounded text-sm
+          transition transition-colors duration-150
+          border-blue-600 text-blue-600
+          dark:text-blue-300 dark:border-blue-300
+          hover:border-pink-700 hover:text-pink-700"
+          onClick={() => onMacSelect(Address)}>WoL</button>
+        {Host && <button type="button" className="
+          px-4 py-2
+          relative
+          border rounded text-sm
+          transition transition-colors duration-150
+          bg-white dark:bg-slate-900/70
+          border-blue-600 text-blue-600
+          dark:text-blue-300 dark:border-blue-300
+          hover:border-pink-700 hover:text-pink-700"
+          onClick={() => sendPing(Name)}>
+          Ping
+          {pingOk === true && <SuccessIcon className="absolute w-4 h-4 text-sm -right-2 -top-2" />}
+          {pingOk === false && <ErrorIcon className="absolute w-4 h-4 text-sm -right-2 -top-2" />}
+          {pingLoading && <LoadingIcon className="absolute w-4 h-4 text-sm -right-2 -top-2 animate-ping" />}
+          {pingError && <ErrorIcon className="absolute w-4 h-4 text-sm -right-2 -top-2" />}
+        </button>}
+      </div>
+      <div className="text-sm">
+        {status === STATUS.SUCCESS && <div className="text-green-600 dark:text-green-400">Sent WOL to {Address}</div>}
+        {status === STATUS.ERROR && <div className="text-red-600 dark:text-red-400">Error: {wolError.message}</div>}
+      </div>
     </footer>
-  </button>;
+  </div>;
 }
 
 function useSendWol() {
@@ -194,7 +281,7 @@ function App() {
   const [isSuccess, setIsSuccess] = useState(false);
 
   function handleMacSelect(address) {
-    setIsSuccess(false);
+    setIsSuccess(null);
     sendWol(address).then(() => {
       setIsSuccess(address);
     });

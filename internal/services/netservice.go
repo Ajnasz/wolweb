@@ -7,9 +7,9 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type NetService struct{}
+type WolService struct{}
 
-func (NetService) GetAvailableBroadcastAddresses() ([]string, error) {
+func (WolService) GetAvailableBroadcastAddresses() ([]string, error) {
 	var broadcastAddresses []string
 	ifaces, err := net.Interfaces()
 	if err != nil {
@@ -41,7 +41,7 @@ func (NetService) GetAvailableBroadcastAddresses() ([]string, error) {
 	return broadcastAddresses, nil
 }
 
-func (n NetService) WoL(macAddr string, broadcastAddress string) error {
+func (n WolService) WoL(macAddr string, broadcastAddress string) error {
 	if broadcastAddress != "" {
 		return wol.SendPacket(macAddr, broadcastAddress)
 	}
