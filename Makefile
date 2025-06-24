@@ -4,6 +4,9 @@ BUILD := $(shell date +%FT%T%z)
 
 .PHONY: all build-ui install-ui
 
+run:
+	go run -ldflags "-X main.version=${VERSION} -X main.build=${BUILD}" main.go
+
 all: install-ui build-ui build/wolweb build/sha256.sum
 
 install-ui:
