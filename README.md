@@ -30,6 +30,14 @@ MacAddresses:
 $ wolweb -config /path/to/config.yaml
 ```
 
+### Customizing the listening address and port
+
+You can customize the address and port on which the WolWeb application listens by using the `-address` flag. The default address is `:8951`.
+
+```bash
+$ wolweb -config /path/to/config.yaml -address :8080
+```
+
 ## Building the Golang App
 
 To build the WolWeb application from source, follow these steps:
