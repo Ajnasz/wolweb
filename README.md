@@ -8,6 +8,7 @@ Wake on LAN web application. WolWeb allows you to remotely wake up devices on yo
 ## Configuration
 
 To configure WolWeb, create a YAML file with the following structure. This file contains the MAC addresses of the devices you want to wake up.
+If you set the `host` field, you will be able to ping the device to check if it is online.
 
 
 config.yaml
@@ -16,8 +17,10 @@ config.yaml
 MacAddresses:
   - name: "Display Name of Device 1"
     address: "00:11:22:00:00:00"
+    host: "192.168.1.2"
   - name: "Display Name of Device 2"
     address: "00:11:22:00:00:01"
+    host: "192.168.1.3"
   - name: "Display Name of Device 3"
     address: "00:11:22:00:00:02"
   - name: "Display Name of Device 4"
