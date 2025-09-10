@@ -19,34 +19,34 @@ build-ui:
 build/wolweb: build/${BINARY_NAME}.linux.amd64 build/${BINARY_NAME}.linux.arm64 build/${BINARY_NAME}.linux.arm build/${BINARY_NAME}.darwin.amd64 build/${BINARY_NAME}.darwin.arm64 build/${BINARY_NAME}.windows.amd64 build/${BINARY_NAME}.windows.arm64 build/${BINARY_NAME}.windows.arm build/${BINARY_NAME}.freebsd.amd64 build/${BINARY_NAME}.freebsd.arm64
 
 build/${BINARY_NAME}.linux.amd64:
-	@GOARCH=amd64 GOOS=linux go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
+	@CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
 
 build/${BINARY_NAME}.linux.arm64:
-	@GOARCH=arm64 GOOS=linux go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
+	@CGO_ENABLED=0 GOARCH=arm64 GOOS=linux go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
 
 build/${BINARY_NAME}.linux.arm:
-	@GOARCH=arm64 GOOS=linux go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
+	@CGO_ENABLED=0 GOARCH=arm64 GOOS=linux go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
 
 build/${BINARY_NAME}.darwin.amd64:
-	@GOARCH=amd64 GOOS=darwin go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
+	@CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
 
 build/${BINARY_NAME}.darwin.arm64:
-	@GOARCH=arm64 GOOS=darwin go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
+	@CGO_ENABLED=0 GOARCH=arm64 GOOS=darwin go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
 
 build/${BINARY_NAME}.windows.amd64:
-	@GOARCH=amd64 GOOS=windows go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
+	@CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
 
 build/${BINARY_NAME}.windows.arm64:
-	@GOARCH=arm64 GOOS=windows go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
+	@CGO_ENABLED=0 GOARCH=arm64 GOOS=windows go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
 
 build/${BINARY_NAME}.windows.arm:
-	@GOARCH=arm64 GOOS=windows go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
+	@CGO_ENABLED=0 GOARCH=arm64 GOOS=windows go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
 
 build/${BINARY_NAME}.freebsd.amd64:
-	@GOARCH=amd64 GOOS=freebsd go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
+	@CGO_ENABLED=0 GOARCH=amd64 GOOS=freebsd go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
 
 build/${BINARY_NAME}.freebsd.arm64:
-	@GOARCH=arm64 GOOS=freebsd go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
+	@CGO_ENABLED=0 GOARCH=arm64 GOOS=freebsd go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
 
 
 build/sha256.sum: build/wolweb
