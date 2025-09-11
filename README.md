@@ -2,8 +2,7 @@
 
 Wake on LAN web application. WolWeb allows you to remotely wake up devices on your network using their MAC addresses. This is particularly useful for managing devices that support Wake-on-LAN (WoL) functionality.
 
-![image](https://github.com/user-attachments/assets/277d750e-89e2-4f22-a2cc-59f9986ab206)
-
+![image](https://github.com/user-attachments/assets/ad997b55-1492-4c00-b4c7-45fde2fe3a7e)
 
 ## Configuration
 
@@ -15,15 +14,16 @@ config.yaml
 
 ```yaml
 MacAddresses:
-  - name: "Display Name of Device 1"
+  - name: "NAS"
     address: "00:11:22:00:00:00"
-    host: "192.168.1.2"
-  - name: "Display Name of Device 2"
+    host: "no.such.host.org"
+  - name: "Home Server"
     address: "00:11:22:00:00:01"
-    host: "192.168.1.3"
-  - name: "Display Name of Device 3"
+    host: "192.168.60.2"
+  - name: "File Server"
     address: "00:11:22:00:00:02"
-  - name: "Display Name of Device 4"
+    host: "192.168.60.3"
+  - name: "Media Center PC"
     address: "00:11:22:00:00:03"
 ```
 
