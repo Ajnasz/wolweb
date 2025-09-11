@@ -1,3 +1,4 @@
+PrivilegedPing: false
 MacAddresses:
   - name: "NAS"
     address: "00:11:22:00:00:00"

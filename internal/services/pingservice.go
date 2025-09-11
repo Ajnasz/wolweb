@@ -7,14 +7,16 @@ import (
 )
 
 type PingService struct {
+	Privileged bool
 }
 
-func (PingService) Ping(address string) (bool, error) {
+func (p PingService) Ping(address string) (bool, error) {
 	pinger := probing.New(address)
 
 	pinger.Count = 1
 	pinger.ResolveTimeout = time.Second
 	pinger.Timeout = time.Second
+	pinger.SetPrivileged(p.Privileged)
 
 	err := pinger.Run()
 

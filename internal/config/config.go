@@ -19,7 +19,8 @@ type MacAddress struct {
 }
 
 type Config struct {
-	MacAddresses []MacAddress
+	MacAddresses   []MacAddress
+	PrivilegedPing bool
 }
 
 func New(configFile string) (*Config, error) {

@@ -71,7 +71,9 @@ func handlePing(logger *slog.Logger, conf *config.Config) http.HandlerFunc {
 			json.NewEncoder(w).Encode(map[string]string{"error": "no IP configured", name: name})
 		}
 
-		pinger := services.PingService{}
+		pinger := services.PingService{
+			Privileged: conf.PrivilegedPing,
+		}
 		ok, err := pinger.Ping(mac.Host)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
