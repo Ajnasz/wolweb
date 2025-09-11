@@ -13,6 +13,7 @@ If you set the `host` field, you will be able to ping the device to check if it 
 config.yaml
 
 ```yaml
+PrivilegedPing: false
 MacAddresses:
   - name: "NAS"
     address: "00:11:22:00:00:00"
