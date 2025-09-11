@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
 import classNames from 'classnames';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 const STATUS = {
   LOADING: 'loading',
@@ -78,6 +78,7 @@ function useSendPing(mac) {
           setError(null);
         } else {
           setOk(false);
+          setError(new Error('Ping timeout'));
         }
       } else {
         const { error } = await response.json();
@@ -219,6 +220,7 @@ function MacAddressButton({ mac, onMacSelect, status, wolError }) {
       <div className="text-sm">
         {status === STATUS.SUCCESS && <div className="text-green-600 dark:text-green-400">Sent WOL to {Address}</div>}
         {status === STATUS.ERROR && <div className="text-red-600 dark:text-red-400">Error: {wolError.message}</div>}
+        {pingError && <div className="text-red-600 dark:text-red-400">Ping Error: {pingError.message}</div>}
       </div>
     </footer>
   </div>;
