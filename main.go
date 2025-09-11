@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/Ajnasz/wolweb/internal/api"
@@ -14,18 +15,19 @@ func main() {
 	configPath := flag.String("config", "", "Path to the configuration file")
 	address := flag.String("address", ":8951", "Address to listen on")
 	flag.Parse()
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	conf, err := config.New(*configPath)
 	if err != nil {
-		slog.Error("Failed to load configuration", "error", err)
+		logger.Error("Failed to load configuration", "error", err)
 	}
 
-	webApi, err := api.New(conf)
+	webApi, err := api.New(logger, conf)
 	if err != nil {
-		slog.Error("Failed to create web api", "error", err)
+		logger.Error("Failed to create web api", "error", err)
 	}
 
-	slog.Info("Starting server", "address", *address)
+	logger.Info("Starting server", "address", *address)
 	server := &http.Server{
 		Addr:         *address,
 		Handler:      webApi,
@@ -35,6 +37,6 @@ func main() {
 	}
 
 	if err := server.ListenAndServe(); err != nil {
-		slog.Error("Failed to start server", "error", err)
+		logger.Error("Failed to start server", "error", err)
 	}
 }

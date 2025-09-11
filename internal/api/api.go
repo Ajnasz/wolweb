@@ -24,26 +24,28 @@ func wakeOnLan(req WoLRequestDAL) error {
 	return netService.WoL(req.MacAddr, req.BroadcastAddr)
 }
 
-func handleWoL(w http.ResponseWriter, r *http.Request) {
-	var req WoLRequestDAL
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if err := wakeOnLan(req); err != nil {
-		slog.Error("Failed to send WoL", "error", err, "mac", req.MacAddr)
-		if errors.Is(err, wol.ErrInvalidMACAddress) {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+func handleWoL(logger *slog.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req WoLRequestDAL
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "success"})
+		if err := wakeOnLan(req); err != nil {
+			logger.Error("Failed to send WoL", "error", err, "mac", req.MacAddr)
+			if errors.Is(err, wol.ErrInvalidMACAddress) {
+				w.WriteHeader(http.StatusBadRequest)
+				json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+				return
+			}
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{"message": "success"})
+	}
 }
 
 func handleMacs(conf *config.Config) http.HandlerFunc {
@@ -53,10 +55,10 @@ func handleMacs(conf *config.Config) http.HandlerFunc {
 	}
 }
 
-func handlePing(conf *config.Config) http.HandlerFunc {
+func handlePing(logger *slog.Logger, conf *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		name := r.PathValue("name")
-		mac := conf.FindByMac(name)
+		mac := conf.FindByMac(r.PathValue("mac"))
+		name := mac.Name
 
 		if mac == nil {
 			w.WriteHeader(http.StatusNotFound)
@@ -74,13 +76,17 @@ func handlePing(conf *config.Config) http.HandlerFunc {
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(map[string]string{"error": err.Error(), name: name})
+			logger.Error("Failed to ping", "error", err, "host", mac.Host, "name", name)
 			return
 		}
 		if ok {
 			w.WriteHeader(http.StatusOK)
 			json.NewEncoder(w).Encode(map[string]string{"status": "ok", name: name})
+			logger.Info("Ping successful", "host", mac.Host, "name", name)
 			return
 		}
+
+		logger.Warn("Ping failed", "host", mac.Host, "name", name)
 
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]string{"status": "failed", name: name})
@@ -88,16 +94,16 @@ func handlePing(conf *config.Config) http.HandlerFunc {
 	}
 }
 
-func New(conf *config.Config) (*http.ServeMux, error) {
+func New(logger *slog.Logger, conf *config.Config) (*http.ServeMux, error) {
 	mux := http.NewServeMux()
 	static, err := ui.Get()
 	if err != nil {
 		return nil, err
 	}
 	mux.Handle("/", http.FileServer(http.FS(static)))
-	mux.HandleFunc("POST /api/wol", handleWoL)
+	mux.HandleFunc("POST /api/wol", handleWoL(logger))
 	mux.HandleFunc("GET /api/macs", handleMacs(conf))
-	mux.HandleFunc("GET /api/ping/{name}", handlePing(conf))
+	mux.HandleFunc("GET /api/ping/{mac}", handlePing(logger, conf))
 
 	return mux, nil
 }

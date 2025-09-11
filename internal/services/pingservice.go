@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"time"
 
 	probing "github.com/prometheus-community/pro-bing"
@@ -24,7 +23,6 @@ func (PingService) Ping(address string) (bool, error) {
 	}
 
 	stats := pinger.Statistics()
-	fmt.Println(stats.PacketLoss)
 
 	return stats.PacketLoss == 0, nil
 }
