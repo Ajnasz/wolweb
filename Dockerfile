@@ -7,7 +7,7 @@ RUN npm install
 RUN npm run build
 
 
-FROM golang:1.24-alpine AS server
+FROM golang:1.26-alpine AS server
 
 COPY . /app
 COPY --from=ui /app/dist /app/ui/wolweb/dist
