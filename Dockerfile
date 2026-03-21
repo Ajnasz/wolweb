@@ -1,4 +1,4 @@
-FROM node:23-alpine AS ui
+FROM node:24-alpine AS ui
 
 COPY ui/wolweb /app
 WORKDIR /app
@@ -7,7 +7,7 @@ RUN npm install
 RUN npm run build
 
 
-FROM golang:1.23-alpine AS server
+FROM golang:1.24-alpine AS server
 
 COPY . /app
 COPY --from=ui /app/dist /app/ui/wolweb/dist
