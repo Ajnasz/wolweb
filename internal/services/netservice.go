@@ -9,7 +9,7 @@ import (
 
 type WolService struct{}
 
-func (WolService) GetAvailableBroadcastAddresses() ([]string, error) {
+func (WolService) getAvailableBroadcastAddresses() ([]string, error) {
 	var broadcastAddresses []string
 	ifaces, err := net.Interfaces()
 	if err != nil {
@@ -31,7 +31,7 @@ func (WolService) GetAvailableBroadcastAddresses() ([]string, error) {
 			ip := ipNet.IP.To4()
 			mask := ipNet.Mask
 			broadcast := make(net.IP, len(ip))
-			for i := 0; i < len(ip); i++ {
+			for i := range ip {
 				broadcast[i] = ip[i] | ^mask[i]
 			}
 			broadcastAddresses = append(broadcastAddresses, broadcast.String())
@@ -46,7 +46,7 @@ func (n WolService) WoL(macAddr string, broadcastAddress string) error {
 		return wol.SendPacket(macAddr, broadcastAddress)
 	}
 
-	broadcastAddresses, err := n.GetAvailableBroadcastAddresses()
+	broadcastAddresses, err := n.getAvailableBroadcastAddresses()
 	if err != nil {
 		return err
 	}
