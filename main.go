@@ -20,11 +20,13 @@ func main() {
 	conf, err := config.New(*configPath)
 	if err != nil {
 		logger.Error("Failed to load configuration", "error", err)
+		os.Exit(1)
 	}
 
 	webApi, err := api.New(logger, conf)
 	if err != nil {
 		logger.Error("Failed to create web api", "error", err)
+		os.Exit(1)
 	}
 
 	logger.Info("Starting server", "address", *address)
@@ -38,5 +40,6 @@ func main() {
 
 	if err := server.ListenAndServe(); err != nil {
 		logger.Error("Failed to start server", "error", err)
+		os.Exit(1)
 	}
 }
