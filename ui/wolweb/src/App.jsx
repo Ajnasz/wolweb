@@ -191,7 +191,7 @@ function MacAddressButton({ mac, onMacSelect, status, wolError }) {
     <div className="text-gray-500 dark:text-gray-400 text-sm cursor-pointer" onClick={() => onMacSelect(Address)}
     >{Address}<br />{Host}</div>
     <footer className="mt-2">
-      <div className="flex justify-between mb-2">
+      <div className="flex justify-between mb-2 gap-2">
         <button type="button" className="
           px-4 py-2
           border rounded text-sm
