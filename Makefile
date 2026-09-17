@@ -2,7 +2,7 @@ BINARY_NAME := wolweb
 VERSION := $(shell git describe --tags)
 BUILD := $(shell date +%FT%T%z)
 
-.PHONY: all build-ui install-ui
+.PHONY: all build-ui install-ui run clean
 
 run:
 	go run -ldflags "-X main.version=${VERSION} -X main.build=${BUILD}" main.go
@@ -16,7 +16,7 @@ build-ui:
 	cd ui/wolweb && npm run build
 
 .PHONY: build/wolweb
-build/wolweb: build/${BINARY_NAME}.linux.amd64 build/${BINARY_NAME}.linux.arm64 build/${BINARY_NAME}.linux.arm build/${BINARY_NAME}.darwin.amd64 build/${BINARY_NAME}.darwin.arm64 build/${BINARY_NAME}.windows.amd64 build/${BINARY_NAME}.windows.arm64 build/${BINARY_NAME}.windows.arm build/${BINARY_NAME}.freebsd.amd64 build/${BINARY_NAME}.freebsd.arm64
+build/wolweb: build/${BINARY_NAME}.linux.amd64 build/${BINARY_NAME}.linux.arm64 build/${BINARY_NAME}.linux.arm build/${BINARY_NAME}.darwin.amd64 build/${BINARY_NAME}.darwin.arm64 build/${BINARY_NAME}.windows.amd64 build/${BINARY_NAME}.windows.arm64 build/${BINARY_NAME}.freebsd.amd64 build/${BINARY_NAME}.freebsd.arm64
 
 build/${BINARY_NAME}.linux.amd64:
 	@CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
@@ -25,7 +25,7 @@ build/${BINARY_NAME}.linux.arm64:
 	@CGO_ENABLED=0 GOARCH=arm64 GOOS=linux go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
 
 build/${BINARY_NAME}.linux.arm:
-	@CGO_ENABLED=0 GOARCH=arm64 GOOS=linux go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
+	@CGO_ENABLED=0 GOARCH=arm GOOS=linux go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
 
 build/${BINARY_NAME}.darwin.amd64:
 	@CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
@@ -37,9 +37,6 @@ build/${BINARY_NAME}.windows.amd64:
 	@CGO_ENABLED=0 GOARCH=amd64 GOOS=windows go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
 
 build/${BINARY_NAME}.windows.arm64:
-	@CGO_ENABLED=0 GOARCH=arm64 GOOS=windows go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
-
-build/${BINARY_NAME}.windows.arm:
 	@CGO_ENABLED=0 GOARCH=arm64 GOOS=windows go build ${BUILD_ARGS} -ldflags "-w -s -X main.version=${VERSION} -X main.build=${BUILD}" -o $@
 
 build/${BINARY_NAME}.freebsd.amd64:
