@@ -1,6 +1,7 @@
 package services
 
 import (
+	"log/slog"
 	"net"
 
 	"github.com/Ajnasz/wol"
@@ -8,6 +9,39 @@ import (
 )
 
 type WolService struct{}
+
+func getBroadcastAddress(addr net.Addr) (string, error) {
+	ipNet, ok := addr.(*net.IPNet)
+	if !ok || ipNet.IP.To4() == nil {
+		return "", nil
+	}
+
+	ip := ipNet.IP.To4()
+	mask := ipNet.Mask
+	broadcast := make(net.IP, len(ip))
+	for i := range ip {
+		broadcast[i] = ip[i] | ^mask[i]
+	}
+
+	return broadcast.String(), nil
+}
+
+func getBroadcastAddresses(iface net.Interface) ([]string, error) {
+	var broadcastAddresses []string
+	addrs, err := iface.Addrs()
+	if err != nil {
+		return []string{}, err
+	}
+
+	for _, addr := range addrs {
+		broadcast, err := getBroadcastAddress(addr)
+		if err == nil && broadcast != "" {
+			broadcastAddresses = append(broadcastAddresses, broadcast)
+		}
+	}
+
+	return broadcastAddresses, nil
+}
 
 func (WolService) getAvailableBroadcastAddresses() ([]string, error) {
 	var broadcastAddresses []string
@@ -17,25 +51,12 @@ func (WolService) getAvailableBroadcastAddresses() ([]string, error) {
 	}
 
 	for _, iface := range ifaces {
-		addrs, err := iface.Addrs()
+		addresses, err := getBroadcastAddresses(iface)
 		if err != nil {
+			slog.Warn("Failed to get broadcast address for interface", "interface", iface.Name, "error", err)
 			continue
 		}
-
-		for _, addr := range addrs {
-			ipNet, ok := addr.(*net.IPNet)
-			if !ok || ipNet.IP.To4() == nil {
-				continue
-			}
-
-			ip := ipNet.IP.To4()
-			mask := ipNet.Mask
-			broadcast := make(net.IP, len(ip))
-			for i := range ip {
-				broadcast[i] = ip[i] | ^mask[i]
-			}
-			broadcastAddresses = append(broadcastAddresses, broadcast.String())
-		}
+		broadcastAddresses = append(broadcastAddresses, addresses...)
 	}
 
 	return broadcastAddresses, nil
