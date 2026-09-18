@@ -10,20 +10,23 @@ import (
 
 type WolService struct{}
 
-func getBroadcastAddress(addr net.Addr) (string, error) {
+func getBroadcastAddress(addr net.Addr) string {
 	ipNet, ok := addr.(*net.IPNet)
 	if !ok || ipNet.IP.To4() == nil {
-		return "", nil
+		return ""
 	}
 
 	ip := ipNet.IP.To4()
 	mask := ipNet.Mask
+	if len(ip) != len(mask) {
+		return ""
+	}
 	broadcast := make(net.IP, len(ip))
 	for i := range ip {
 		broadcast[i] = ip[i] | ^mask[i]
 	}
 
-	return broadcast.String(), nil
+	return broadcast.String()
 }
 
 func getBroadcastAddresses(iface net.Interface) ([]string, error) {
@@ -34,8 +37,8 @@ func getBroadcastAddresses(iface net.Interface) ([]string, error) {
 	}
 
 	for _, addr := range addrs {
-		broadcast, err := getBroadcastAddress(addr)
-		if err == nil && broadcast != "" {
+		broadcast := getBroadcastAddress(addr)
+		if broadcast != "" {
 			broadcastAddresses = append(broadcastAddresses, broadcast)
 		}
 	}
