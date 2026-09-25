@@ -54,6 +54,9 @@ func (WolService) getAvailableBroadcastAddresses() ([]string, error) {
 	}
 
 	for _, iface := range ifaces {
+		if iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagBroadcast == 0 {
+			continue
+		}
 		addresses, err := getBroadcastAddresses(iface)
 		if err != nil {
 			slog.Warn("Failed to get broadcast address for interface", "interface", iface.Name, "error", err)
