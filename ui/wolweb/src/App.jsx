@@ -159,32 +159,18 @@ function ErrorIcon({ className }) {
   return <StatusIconWrapper className={classNames("bg-red-600", className)}>!</StatusIconWrapper>;
 }
 
-function MacAddressButton({ mac, onMacSelect, status, wolError }) {
+function Card({ mac, onMacSelect, status, wolError }) {
   const { Address, Name, Host } = mac;
   const { ok: pingOk, error: pingError, sendPing, loading: pingLoading } = useSendPing(Address);
 
-  return <div className={classNames(
-    `
-    relative
-    text-center
-
-    p-5
-    rounded-lg
-    border dark:border-none
-    shadow-sm hover:shadow dark:shadow-none dark:hover:shadow-none
-    bg-white dark:bg-slate-900/70
-    transition transition-colors transition-shadow
-    focus:outline-none
-    focus:ring-2 focus:ring-blue-600 dark:focus:ring-blue-300
-    `)}>
+  return <div
+    className="card">
     {(status === STATUS.LOADING || status === STATUS.SUCCESS || status === STATUS.ERROR) && <AnimatedStatusIcon status={status} />}
     <h2 className="text-lg">
-      <button type="button"
-        onClick={() => onMacSelect(Address)}
-        className="
-        transition transition-colors duration-150
-        text-blue-600 dark:text-blue-300
-        hover:text-pink-700">
+      <button
+        type="button"
+        className="btn-txt"
+        onClick={() => onMacSelect(Address)}>
         {Name}
       </button>
     </h2>
@@ -192,35 +178,23 @@ function MacAddressButton({ mac, onMacSelect, status, wolError }) {
     >{Address}<br />{Host}</div>
     <footer className="mt-2">
       <div className="flex justify-between mb-2 gap-2">
-        <button type="button" className="
-          px-4 py-2
-          border rounded text-sm
-          transition transition-colors duration-150
-          border-blue-600 text-blue-600
-          dark:text-blue-300 dark:border-blue-300
-          hover:border-pink-700 hover:text-pink-700"
-          onClick={() => onMacSelect(Address)}>WoL</button>
-        {Host && <button type="button" className="
-          px-4 py-2
-          relative
-          border rounded text-sm
-          transition transition-colors duration-150
-          bg-white dark:bg-slate-900/70
-          border-blue-600 text-blue-600
-          dark:text-blue-300 dark:border-blue-300
-          hover:border-pink-700 hover:text-pink-700"
+        <button
+            type="button"
+            className="btn-txt btn"
+            onClick={() => onMacSelect(Address)}>WoL</button>
+        {Host && <button type="button" className="btn-txt btn"
           onClick={() => sendPing(Name)}>
           Ping
-          {pingOk === true && <SuccessIcon className="absolute w-4 h-4 text-sm -right-2 -top-2" />}
-          {pingOk === false && <ErrorIcon className="absolute w-4 h-4 text-sm -right-2 -top-2" />}
-          {pingLoading && <LoadingIcon className="absolute w-4 h-4 text-sm -right-2 -top-2 animate-ping" />}
-          {pingError && <ErrorIcon className="absolute w-4 h-4 text-sm -right-2 -top-2" />}
+          {pingOk === true && <SuccessIcon className="icon" />}
+          {pingOk === false && <ErrorIcon className="icon" />}
+          {pingLoading && <LoadingIcon className="icon" />}
+          {pingError && <ErrorIcon className="icon" />}
         </button>}
       </div>
       <div className="text-sm">
-        {status === STATUS.SUCCESS && <div className="text-green-600 dark:text-green-400">Sent WOL to {Address}</div>}
-        {status === STATUS.ERROR && <div className="text-red-600 dark:text-red-400">Error: {wolError.message}</div>}
-        {pingError && <div className="text-red-600 dark:text-red-400">Ping Error: {pingError.message}</div>}
+        {status === STATUS.SUCCESS && <div className="succ">Sent WOL to {Address}</div>}
+        {status === STATUS.ERROR && <div className="err">Error: {wolError.message}</div>}
+        {pingError && <div className="err">Ping Error: {pingError.message}</div>}
       </div>
     </footer>
   </div>;
@@ -294,12 +268,12 @@ function App() {
   }
 
   if (macError) {
-    return <div className="p-4 bg-gray-300 text-red-600 rounded">Error: {macError.message}</div>;
+    return <div className="p-4 bg-gray-300 text-red-600 rounded-sm">Error: {macError.message}</div>;
   }
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-      {macs.map((mac) => <MacAddressButton
+      {macs.map((mac) => <Card
         key={mac.Address}
         mac={mac}
         status={macAddr === mac.Address && determineStatus(wolError, wolLoading, isSuccess)}

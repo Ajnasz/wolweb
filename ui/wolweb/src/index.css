@@ -1,1 +1,40 @@
 @import "tailwindcss";
+
+.btn-txt {
+  @apply
+        cursor-pointer
+        transition transition-colors duration-150
+        text-blue-600 dark:text-blue-300 hover:text-pink-700;
+}
+
+.btn {
+  @apply
+    text-sm
+    px-4 py-2
+    border rounded-sm
+    bg-white dark:bg-gray-900/70
+    border-blue-600 dark:border-blue-300 hover:border-pink-700;
+}
+
+.icon {
+  @apply absolute w-4 h-4 text-sm -right-2 -top-2;
+}
+
+.err {
+  @apply text-red-600 dark:text-red-400;
+}
+.succ {
+  @apply text-green-600 dark:text-green-400;
+}
+
+.card {
+  @apply
+    relative
+    text-center
+    p-5
+    rounded-lg
+    ring ring-gray-900/10
+    shadow-md hover:shadow-lg
+    bg-white dark:bg-gray-900/70
+    transition transition-colors transition-shadow;
+}
