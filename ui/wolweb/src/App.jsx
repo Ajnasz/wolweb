@@ -148,15 +148,15 @@ function StatusIconWrapper({ children, className }) {
 }
 
 function SuccessIcon({ className }) {
-  return <StatusIconWrapper className={classNames("bg-green-600", className)}>✓</StatusIconWrapper>;
+  return <StatusIconWrapper className={classNames("bg-success", className)}>✓</StatusIconWrapper>;
 }
 
 function LoadingIcon({ className }) {
-  return <StatusIconWrapper className={classNames("bg-blue-600", className)}>⌛</StatusIconWrapper>;
+  return <StatusIconWrapper className={classNames("bg-info", className)}>⌛</StatusIconWrapper>;
 }
 
 function ErrorIcon({ className }) {
-  return <StatusIconWrapper className={classNames("bg-red-600", className)}>!</StatusIconWrapper>;
+  return <StatusIconWrapper className={classNames("bg-danger", className)}>!</StatusIconWrapper>;
 }
 
 function Card({ mac, onMacSelect, status, wolError }) {
@@ -174,7 +174,7 @@ function Card({ mac, onMacSelect, status, wolError }) {
         {Name}
       </button>
     </h2>
-    <div className="text-gray-500 dark:text-gray-400 text-sm cursor-pointer" onClick={() => onMacSelect(Address)}
+    <div className="text-muted text-sm cursor-pointer" onClick={() => onMacSelect(Address)}
     >{Address}<br />{Host}</div>
     <footer className="mt-2">
       <div className="flex justify-between mb-2 gap-2">
@@ -268,7 +268,7 @@ function App() {
   }
 
   if (macError) {
-    return <div className="p-4 bg-gray-300 text-red-600 rounded-sm">Error: {macError.message}</div>;
+    return <div className="p-4 bg-alert-bg text-danger rounded-sm">Error: {macError.message}</div>;
   }
 
   return (

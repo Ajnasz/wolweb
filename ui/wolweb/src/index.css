@@ -1,10 +1,52 @@
 @import "tailwindcss";
 
+/* Theme colors. Change the values here to restyle the app. */
+:root {
+  --page-bg: var(--color-white);
+  --page-text: var(--color-gray-700);
+  --surface: var(--color-white);
+  --text-muted: var(--color-gray-500);
+  --accent: var(--color-blue-600);
+  --accent-hover: var(--color-pink-700);
+  --danger: var(--color-red-600);
+  --success: var(--color-green-600);
+  --info: var(--color-blue-600);
+  --alert-bg: var(--color-gray-300);
+  --card-ring: color-mix(in oklab, var(--color-gray-900) 10%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page-bg: var(--color-gray-800);
+    --page-text: var(--color-gray-200);
+    --surface: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
+    --text-muted: var(--color-gray-400);
+    --accent: var(--color-blue-300);
+    --danger: var(--color-red-400);
+    --success: var(--color-green-400);
+  }
+}
+
+/* Makes the variables available as utilities, e.g. text-accent, bg-page */
+@theme inline {
+  --color-page: var(--page-bg);
+  --color-page-text: var(--page-text);
+  --color-surface: var(--surface);
+  --color-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-info: var(--info);
+  --color-alert-bg: var(--alert-bg);
+  --color-card-ring: var(--card-ring);
+}
+
 .btn-txt {
   @apply
         cursor-pointer
         transition transition-colors duration-150
-        text-blue-600 dark:text-blue-300 hover:text-pink-700;
+        text-accent hover:text-accent-hover;
 }
 
 .btn {
@@ -12,8 +54,8 @@
     text-sm
     px-4 py-2
     border rounded-sm
-    bg-white dark:bg-gray-900/70
-    border-blue-600 dark:border-blue-300 hover:border-pink-700;
+    bg-surface
+    border-accent hover:border-accent-hover;
 }
 
 .icon {
@@ -21,10 +63,10 @@
 }
 
 .err {
-  @apply text-red-600 dark:text-red-400;
+  @apply text-danger;
 }
 .succ {
-  @apply text-green-600 dark:text-green-400;
+  @apply text-success;
 }
 
 .card {
@@ -33,8 +75,8 @@
     text-center
     p-5
     rounded-lg
-    ring ring-gray-900/10
+    ring ring-card-ring
     shadow-md hover:shadow-lg
-    bg-white dark:bg-gray-900/70
+    bg-surface
     transition transition-colors transition-shadow;
 }
