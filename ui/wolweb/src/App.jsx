@@ -175,7 +175,7 @@ function Card({ mac, onMacSelect, status, wolError }) {
       </button>
     </h2>
     <div className="text-muted text-sm cursor-pointer" onClick={() => onMacSelect(Address)}
-    >{Address}<br />{Host}</div>
+    >{Address.toUpperCase()}<br />{Host}</div>
     <footer className="mt-2">
       <div className="flex justify-between mb-2 gap-2">
         <button
@@ -192,7 +192,7 @@ function Card({ mac, onMacSelect, status, wolError }) {
         </button>}
       </div>
       <div className="text-sm">
-        {status === STATUS.SUCCESS && <div className="succ">Sent WOL to {Address}</div>}
+        {status === STATUS.SUCCESS && <div className="succ">Sent WOL to {Address.toUpperCase()}</div>}
         {status === STATUS.ERROR && <div className="err">Error: {wolError.message}</div>}
         {pingError && <div className="err">Ping Error: {pingError.message}</div>}
       </div>
