@@ -24,11 +24,16 @@ func wakeOnLan(req WoLRequestDAL) error {
 	return netService.WoL(req.MacAddr, req.BroadcastAddr)
 }
 
-func handleWoL(logger *slog.Logger) http.HandlerFunc {
+func handleWoL(logger *slog.Logger, conf *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req WoLRequestDAL
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if conf.OnlyRegisteredDevices && conf.FindByMac(req.MacAddr) == nil {
+			w.WriteHeader(http.StatusNotFound)
+			json.NewEncoder(w).Encode(map[string]string{"error": "device not registered"})
 			return
 		}
 
@@ -103,7 +108,7 @@ func New(logger *slog.Logger, conf *config.Config) (*http.ServeMux, error) {
 		return nil, err
 	}
 	mux.Handle("/", http.FileServer(http.FS(static)))
-	mux.HandleFunc("POST /api/wol", handleWoL(logger))
+	mux.HandleFunc("POST /api/wol", handleWoL(logger, conf))
 	mux.HandleFunc("GET /api/macs", handleMacs(conf))
 	mux.HandleFunc("GET /api/ping/{mac}", handlePing(logger, conf))
 
