@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"net"
 	"net/http"
 
 	"github.com/Ajnasz/wol"
@@ -12,26 +13,50 @@ import (
 	"github.com/Ajnasz/wolweb/ui"
 )
 
-type WoLRequestDAL struct {
+type WoLRequestDTO struct {
 	MacAddr       string `json:"mac_addr"`
 	BroadcastAddr string `json:"broadcast_addr"`
 }
 
+type DeviceResponseDTO struct {
+	Name    string `json:"Name"`
+	Address string `json:"Address"`
+	Host    string `json:"Host"`
+}
+
+func woLDevicetoResponseDTO(device config.WoLDevice) DeviceResponseDTO {
+	return DeviceResponseDTO{
+		Name:    device.Name,
+		Address: device.Address.String(),
+		Host:    device.Host,
+	}
+}
+
 type API struct{}
 
-func wakeOnLan(req WoLRequestDAL) error {
+func wakeOnLan(req WoLRequestDTO) error {
 	netService := services.WolService{}
-	return netService.WoL(req.MacAddr, req.BroadcastAddr)
+	macAddr, err := net.ParseMAC(req.MacAddr)
+	if err != nil {
+		return err
+	}
+	return netService.WoL(macAddr, req.BroadcastAddr)
 }
 
 func handleWoL(logger *slog.Logger, conf *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req WoLRequestDAL
+		var req WoLRequestDTO
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if conf.OnlyRegisteredDevices && conf.FindByMac(req.MacAddr) == nil {
+		hwAddr, err := net.ParseMAC(req.MacAddr)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"error": "invalid MAC address"})
+			return
+		}
+		if conf.OnlyRegisteredDevices && conf.FindByMac(hwAddr) == nil {
 			w.WriteHeader(http.StatusNotFound)
 			json.NewEncoder(w).Encode(map[string]string{"error": "device not registered"})
 			return
@@ -56,14 +81,25 @@ func handleWoL(logger *slog.Logger, conf *config.Config) http.HandlerFunc {
 func handleMacs(conf *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]interface{}{"macs": conf.MacAddresses})
+		addresses := make([]DeviceResponseDTO, len(conf.MacAddresses))
+		for i, device := range conf.MacAddresses {
+			addresses[i] = woLDevicetoResponseDTO(device)
+		}
+		json.NewEncoder(w).Encode(map[string]any{"macs": addresses})
 	}
 }
 
 func handlePing(logger *slog.Logger, conf *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		macValue := r.PathValue("mac")
-		mac := conf.FindByMac(macValue)
+		hwAddr, err := net.ParseMAC(macValue)
+
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"error": "invalid MAC address"})
+			return
+		}
+		mac := conf.FindByMac(hwAddr)
 
 		if mac == nil {
 			w.WriteHeader(http.StatusNotFound)

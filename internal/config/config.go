@@ -2,7 +2,10 @@ package config
 
 import (
 	"errors"
+	"net"
+	"reflect"
 
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/spf13/viper"
 )
 
@@ -12,16 +15,28 @@ var ErrFailedToReadConfig = errors.New("failed to read config")
 // ErrFailedToParseConfig is an error that is returned when the config file is not able to be parsed
 var ErrFailedToParseConfig = errors.New("failed to parse config")
 
-type MacAddress struct {
-	Address string
+var ErrInvalidMACAddress = errors.New("invalid MAC address")
+
+type WoLDevice struct {
+	Address net.HardwareAddr
 	Name    string
 	Host    string
 }
 
 type Config struct {
-	MacAddresses          []MacAddress
+	MacAddresses          []WoLDevice
 	PrivilegedPing        bool
 	OnlyRegisteredDevices bool
+}
+
+func stringToHardwareAddrHook() mapstructure.DecodeHookFunc {
+	return func(from, to reflect.Type, data any) (any, error) {
+		if from.Kind() != reflect.String || to != reflect.TypeFor[net.HardwareAddr]() {
+			return data, nil
+		}
+
+		return net.ParseMAC(data.(string))
+	}
 }
 
 func New(configFile string) (*Config, error) {
@@ -40,7 +55,11 @@ func New(configFile string) (*Config, error) {
 	}
 
 	var c Config
-	err = viperConfig.Unmarshal(&c)
+	err = viperConfig.Unmarshal(&c, viper.DecodeHook(
+		mapstructure.ComposeDecodeHookFunc(
+			mapstructure.StringToTimeDurationHookFunc(),
+			mapstructure.StringToSliceHookFunc(","),
+			stringToHardwareAddrHook())))
 	if err != nil {
 		return nil, errors.Join(err, ErrFailedToParseConfig)
 	}
@@ -48,7 +67,7 @@ func New(configFile string) (*Config, error) {
 	return &c, nil
 }
 
-func (c Config) FindByName(name string) *MacAddress {
+func (c Config) FindByName(name string) *WoLDevice {
 	for _, mac := range c.MacAddresses {
 		if mac.Name == name {
 			return &mac
@@ -58,9 +77,9 @@ func (c Config) FindByName(name string) *MacAddress {
 	return nil
 }
 
-func (c Config) FindByMac(address string) *MacAddress {
+func (c Config) FindByMac(address net.HardwareAddr) *WoLDevice {
 	for _, mac := range c.MacAddresses {
-		if mac.Address == address {
+		if mac.Address.String() == address.String() {
 			return &mac
 		}
 	}

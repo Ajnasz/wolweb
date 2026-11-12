@@ -68,9 +68,9 @@ func (WolService) getAvailableBroadcastAddresses() ([]string, error) {
 	return broadcastAddresses, nil
 }
 
-func (n WolService) WoL(macAddr string, broadcastAddress string) error {
+func (n WolService) WoL(macAddr net.HardwareAddr, broadcastAddress string) error {
 	if broadcastAddress != "" {
-		return wol.SendPacket(macAddr, broadcastAddress)
+		return wol.SendPacket(macAddr.String(), broadcastAddress)
 	}
 
 	broadcastAddresses, err := n.getAvailableBroadcastAddresses()
@@ -82,7 +82,7 @@ func (n WolService) WoL(macAddr string, broadcastAddress string) error {
 
 	for _, broadcastAddress := range broadcastAddresses {
 		g.Go(func() error {
-			return wol.SendPacket(macAddr, broadcastAddress)
+			return wol.SendPacket(macAddr.String(), broadcastAddress)
 		})
 
 	}
