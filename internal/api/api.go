@@ -62,18 +62,20 @@ func handleMacs(conf *config.Config) http.HandlerFunc {
 
 func handlePing(logger *slog.Logger, conf *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		mac := conf.FindByMac(r.PathValue("mac"))
-		name := mac.Name
+		macValue := r.PathValue("mac")
+		mac := conf.FindByMac(macValue)
 
 		if mac == nil {
 			w.WriteHeader(http.StatusNotFound)
-			json.NewEncoder(w).Encode(map[string]string{"error": "configuration not found", name: name})
+			json.NewEncoder(w).Encode(map[string]string{"error": "configuration not found", "mac": macValue})
 			return
 		}
 
+		name := mac.Name
 		if mac.Host == "" {
 			w.WriteHeader(http.StatusNotFound)
-			json.NewEncoder(w).Encode(map[string]string{"error": "no IP configured", name: name})
+			json.NewEncoder(w).Encode(map[string]string{"error": "no IP configured", name: name, "mac": macValue})
+			return
 		}
 
 		pinger := services.PingService{
