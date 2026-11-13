@@ -8,3 +8,17 @@ createRoot(document.getElementById('root')).render(
     <App />
   </StrictMode>
 );
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+}
+
+function main() {
+  const ls = window.localStorage;
+  console.log('main', ls.getItem('theme'));
+  if (ls.getItem('theme')) {
+    applyTheme(ls.getItem('theme'));
+  }
+}
+
+document.addEventListener('DOMContentLoaded', main);

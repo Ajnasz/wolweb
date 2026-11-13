@@ -27,6 +27,18 @@
   }
 }
 
+[data-theme=stone] {
+    --page-bg: var(--color-stone-800);
+    --page-text: var(--color-stone-200);
+    --surface: var(--color-stone-900);
+    --text-muted: var(--color-stone-400);
+    --accent: var(--color-stone-300);
+    --accent-hover: var(--color-teal-400);
+    --danger: var(--color-red-400);
+    --success: var(--color-green-400);
+}
+
+
 /* Makes the variables available as utilities, e.g. text-accent, bg-page */
 @theme inline {
   --color-page: var(--page-bg);
