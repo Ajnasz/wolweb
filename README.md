@@ -97,13 +97,13 @@ docker build -t wolweb .
 2. Pull the Docker image from the GitHub Container Registry or use the image you built in the previous step:
 
 ```bash
-docker pull ghcr.io/ajnasz/wolweb:v1.9.0
+docker pull ghcr.io/ajnasz/wolweb:v1.11.0
 ```
 
 3. Run the Docker container:
 
 ```bash
-docker run -d --network host -v $PWD/config.yaml:/app/config.yaml ghcr.io/ajnasz/wolweb:v1.9.0
+docker run -d --network host -v $PWD/config.yaml:/app/config.yaml ghcr.io/ajnasz/wolweb:v1.11.0
 ```
 
 You must mount the configuration file as `/app/config.yaml` in the container. You can replace `$PWD/config.yaml` with the actual path to your configuration file.
