@@ -2,7 +2,7 @@
 
 /* Theme colors. Change the values here to restyle the app. */
 :root {
-  --page-bg: var(--color-white);
+  --page-bg: var(--color-stone-100);
   --page-text: var(--color-gray-700);
   --surface: var(--color-white);
   --text-muted: var(--color-gray-500);
@@ -17,11 +17,12 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --page-bg: var(--color-gray-800);
-    --page-text: var(--color-gray-200);
-    --surface: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
-    --text-muted: var(--color-gray-400);
-    --accent: var(--color-blue-300);
+    --page-bg: var(--color-slate-800);
+    --page-text: var(--color-slate-200);
+    --surface: var(--color-slate-900);
+    --text-muted: var(--color-slate-400);
+    --accent: var(--color-slate-300);
+    --accent-hover: var(--color-pink-400);
     --danger: var(--color-red-400);
     --success: var(--color-green-400);
   }
@@ -38,6 +39,33 @@
     --success: var(--color-green-400);
 }
 
+[data-theme=mist] {
+    --page-bg: var(--color-mist-800);
+    --page-text: var(--color-mist-200);
+    --surface: var(--color-mist-900);
+    --text-muted: var(--color-mist-400);
+    --accent: var(--color-mist-300);
+    --accent-hover: var(--color-teal-400);
+    --danger: var(--color-red-400);
+    --success: var(--color-green-400);
+}
+
+
+/* Derive a full palette from the user-picked base color using oklch relative colors.
+   --base-color is set from JS alongside data-color-theme.
+   Text lightness is fixed high (>=0.85) and background lightness low (<=0.32)
+   with muted chroma, so contrast stays readable regardless of the hue picked. */
+[data-color-theme] {
+    --accent: oklch(from var(--base-color) max(l, 0.7) c h);
+    --accent-hover: oklch(from var(--base-color) max(l, 0.8) c h);
+    --page-bg: oklch(from var(--base-color) 0.22 0.015 h);
+    --page-text: oklch(from var(--base-color) 0.95 0.01 h);
+    --surface: oklch(from var(--base-color) 0.3 0.02 h);
+    --text-muted: oklch(from var(--base-color) 0.78 0.02 h);
+    --alert-bg: oklch(from var(--base-color) 0.4 0.02 h);
+    --card-ring: oklch(from var(--base-color) 0.6 0.03 h / 0.5);
+}
+
 
 /* Makes the variables available as utilities, e.g. text-accent, bg-page */
 @theme inline {
@@ -52,6 +80,48 @@
   --color-info: var(--info);
   --color-alert-bg: var(--alert-bg);
   --color-card-ring: var(--card-ring);
+}
+
+/* Theme switcher */
+
+.theme-switcher.collapsed .theme-switcher-toggle {
+  @apply opacity-50 hover:opacity-100;
+}
+
+.theme-switcher select {
+  appearance: none;
+  /* custom dropdown arrow */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Cpath fill='%23888' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+}
+
+/* Option backgrounds: honored by Firefox; Chromium/Safari use the native
+   menu unless appearance: base-select is available. */
+.theme-switcher option {
+  @apply bg-page text-page-text;
+}
+
+/* Full option styling in Chromium 135+ */
+@supports (appearance: base-select) {
+  .theme-switcher select,
+  .theme-switcher select::picker(select) {
+    appearance: base-select;
+  }
+
+  .theme-switcher select::picker(select) {
+    @apply bg-page text-page-text
+    border-accent;
+    border-radius: 4px;
+  }
+
+  .theme-switcher option {
+    padding: 0.25rem 0.5rem;
+  }
+
+  .theme-switcher option:hover {
+    background-color: var(--surface);
+  }
 }
 
 .btn-txt {
