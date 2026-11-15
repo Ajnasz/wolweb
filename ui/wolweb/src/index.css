@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* Theme colors. Change the values here to restyle the app. */
 :root {
   --page-bg: var(--color-stone-100);
   --page-text: var(--color-gray-700);
@@ -12,7 +11,7 @@
   --success: var(--color-green-600);
   --info: var(--color-blue-600);
   --alert-bg: var(--color-gray-300);
-  --card-ring: color-mix(in oklab, var(--color-gray-900) 10%, transparent);
+  --card-ring: color-mix(in oklab, var(--color-stone-900) 10%, transparent);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,48 +21,66 @@
     --surface: var(--color-slate-900);
     --text-muted: var(--color-slate-400);
     --accent: var(--color-slate-300);
-    --accent-hover: var(--color-pink-400);
+    --accent-hover: var(--color-pink-600);
     --danger: var(--color-red-400);
     --success: var(--color-green-400);
+    --card-ring: color-mix(in oklab, var(--color-slate-400) 10%, transparent);
   }
+
 }
 
 [data-theme=stone] {
-    --page-bg: var(--color-stone-800);
-    --page-text: var(--color-stone-200);
-    --surface: var(--color-stone-900);
-    --text-muted: var(--color-stone-400);
-    --accent: var(--color-stone-300);
-    --accent-hover: var(--color-teal-400);
-    --danger: var(--color-red-400);
-    --success: var(--color-green-400);
+  --page-bg: var(--color-stone-800);
+  --page-text: var(--color-stone-200);
+  --surface: var(--color-stone-900);
+  --text-muted: var(--color-stone-400);
+  --accent: var(--color-stone-300);
+  --accent-hover: var(--color-pink-400);
+  --danger: var(--color-red-400);
+  --success: var(--color-green-400);
+  --card-ring: color-mix(in oklab, var(--color-stone-400) 10%, transparent);
 }
+
 
 [data-theme=mist] {
-    --page-bg: var(--color-mist-800);
-    --page-text: var(--color-mist-200);
-    --surface: var(--color-mist-900);
-    --text-muted: var(--color-mist-400);
-    --accent: var(--color-mist-300);
-    --accent-hover: var(--color-teal-400);
-    --danger: var(--color-red-400);
-    --success: var(--color-green-400);
+  --base-color: var(--color-mist-800);
+  --page-bg: var(--color-mist-800);
+  --page-text: var(--color-mist-200);
+  --surface: var(--color-mist-900);
+  --text-muted: var(--color-mist-400);
+  --accent: var(--color-mist-300);
+  --accent-hover: var(--color-pink-400);
+  --danger: var(--color-red-400);
+  --success: var(--color-green-400);
+  --card-ring: color-mix(in oklab, var(--color-mist-400) 10%, transparent);
 }
-
 
 /* Derive a full palette from the user-picked base color using oklch relative colors.
    --base-color is set from JS alongside data-color-theme.
    Text lightness is fixed high (>=0.85) and background lightness low (<=0.32)
    with muted chroma, so contrast stays readable regardless of the hue picked. */
 [data-color-theme] {
+  --base-color: var(--color-slate-100);
+  --accent: oklch(from var(--base-color) 0.5 0.25 h);
+  --accent-hover: oklch(from var(--base-color) 0.55 0.25 h);
+  --page-bg: oklch(from var(--base-color) 0.94 0.005 h);
+  --page-text: oklch(from var(--base-color) 0.2 0.01 h);
+  --surface: oklch(from var(--base-color) 1 0.01 h);
+  --text-muted: oklch(from var(--base-color) 0.7 0.02 h);
+  --alert-bg: oklch(from var(--base-color) 0.5 0.02 h);
+  --card-ring: oklch(from var(--base-color) 0.5 0.03 h / 0.8);
+
+  @media (prefers-color-scheme: dark) {
+    --base-color: var(--color-slate-800);
     --accent: oklch(from var(--base-color) max(l, 0.7) c h);
     --accent-hover: oklch(from var(--base-color) max(l, 0.8) c h);
-    --page-bg: oklch(from var(--base-color) 0.22 0.015 h);
+    --page-bg: oklch(from var(--base-color) 0.23 0.035 h);
     --page-text: oklch(from var(--base-color) 0.95 0.01 h);
-    --surface: oklch(from var(--base-color) 0.3 0.02 h);
+    --surface: oklch(from var(--base-color) 0.15 0.05 h);
     --text-muted: oklch(from var(--base-color) 0.78 0.02 h);
     --alert-bg: oklch(from var(--base-color) 0.4 0.02 h);
     --card-ring: oklch(from var(--base-color) 0.6 0.03 h / 0.5);
+  }
 }
 
 
@@ -84,10 +101,6 @@
 
 /* Theme switcher */
 
-.theme-switcher.collapsed .theme-switcher-toggle {
-  @apply opacity-50 hover:opacity-100;
-}
-
 .theme-switcher select {
   appearance: none;
   /* custom dropdown arrow */
@@ -104,14 +117,14 @@
 
 /* Full option styling in Chromium 135+ */
 @supports (appearance: base-select) {
+
   .theme-switcher select,
   .theme-switcher select::picker(select) {
     appearance: base-select;
   }
 
   .theme-switcher select::picker(select) {
-    @apply bg-page text-page-text
-    border-accent;
+    @apply bg-page text-page-text border-accent;
     border-radius: 4px;
   }
 
@@ -122,43 +135,4 @@
   .theme-switcher option:hover {
     background-color: var(--surface);
   }
-}
-
-.btn-txt {
-  @apply
-        cursor-pointer
-        transition transition-colors duration-150
-        text-accent hover:text-accent-hover;
-}
-
-.btn {
-  @apply
-    text-sm
-    px-4 py-2
-    border rounded-sm
-    bg-surface
-    border-accent hover:border-accent-hover;
-}
-
-.icon {
-  @apply absolute w-4 h-4 text-sm -right-2 -top-2;
-}
-
-.err {
-  @apply text-danger;
-}
-.succ {
-  @apply text-success;
-}
-
-.card {
-  @apply
-    relative
-    text-center
-    p-5
-    rounded-lg
-    ring ring-card-ring
-    shadow-md hover:shadow-lg
-    bg-surface
-    transition transition-colors transition-shadow;
 }

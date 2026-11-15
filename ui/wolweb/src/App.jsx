@@ -1,5 +1,6 @@
 import classNames from 'classnames';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Button, ButtonTxt } from './Button.jsx';
 
 const STATUS = {
   LOADING: 'loading',
@@ -164,37 +165,31 @@ function Card({ mac, onMacSelect, status, wolError }) {
   const { ok: pingOk, error: pingError, sendPing, loading: pingLoading } = useSendPing(Address);
 
   return <div
-    className="card">
+    className="relative text-center p-5 rounded-lg shadow-md shadow-card-ring/50 hover:shadow-lg bg-surface transition transition-colors transition-shadow">
     {(status === STATUS.LOADING || status === STATUS.SUCCESS || status === STATUS.ERROR) && <AnimatedStatusIcon status={status} />}
     <h2 className="text-lg">
-      <button
-        type="button"
-        className="btn-txt"
+      <ButtonTxt
         onClick={() => onMacSelect(Address)}>
         {Name}
-      </button>
+      </ButtonTxt>
     </h2>
     <div className="text-muted text-sm cursor-pointer" onClick={() => onMacSelect(Address)}>
       <span className="font-mono">{Address.toUpperCase()}</span><br />{Host}</div>
     <footer className="mt-2">
       <div className="flex justify-between mb-2 gap-2">
-        <button
-            type="button"
-            className="btn-txt btn"
-            onClick={() => onMacSelect(Address)}>WoL</button>
-        {Host && <button type="button" className="btn-txt btn"
-          onClick={() => sendPing(Name)}>
+        <Button onClick={() => onMacSelect(Address)}>WoL</Button>
+        {Host && <Button onClick={() => sendPing(Name)}>
           Ping
-          {pingOk === true && <SuccessIcon className="icon" />}
-          {pingOk === false && <ErrorIcon className="icon" />}
-          {pingLoading && <LoadingIcon className="icon" />}
-          {pingError && <ErrorIcon className="icon" />}
-        </button>}
+          {pingOk === true && <SuccessIcon className="absolute w-4 h-4 text-sm -right-2 -top-2" />}
+          {pingOk === false && <ErrorIcon className="absolute w-4 h-4 text-sm -right-2 -top-2" />}
+          {pingLoading && <LoadingIcon className="absolute w-4 h-4 text-sm -right-2 -top-2" />}
+          {pingError && <ErrorIcon className="absolute w-4 h-4 text-sm -right-2 -top-2" />}
+        </Button>}
       </div>
       <div className="text-sm">
-        {status === STATUS.SUCCESS && <div className="succ">Sent WOL to <span className="font-mono">{Address.toUpperCase()}</span></div>}
-        {status === STATUS.ERROR && <div className="err">Error: {wolError.message}</div>}
-        {pingError && <div className="err">Ping Error: {pingError.message}</div>}
+        {status === STATUS.SUCCESS && <div className="text-success">Sent WOL to <span className="font-mono">{Address.toUpperCase()}</span></div>}
+        {status === STATUS.ERROR && <div className="text-error">Error: {wolError.message}</div>}
+        {pingError && <div className="text-error">Ping Error: {pingError.message}</div>}
       </div>
     </footer>
   </div>;
